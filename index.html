@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/brython@3.13.2/brython.min.js">
+    </script>
+    <script type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/brython@3.13.2/brython_stdlib.js">
+    </script>
+    <script type="text/python3" src="main.py"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
+    >
+    <!-- TODO: Add favicon -->
+    <title>Calendar Generator</title>
+  </head>
+
+  <body onload="brython()">
+    <!-- TODO: Improve UI of form-->
+    <form id="calendarForm">
+      <div class="field">
+        <div class="control">
+          <label class="checkbox">
+            <input type="checkbox" id="includeDayNames">
+            Include names of the days of the week
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="control">
+          <label class="checkbox">
+            <input type="checkbox" id="includeEmojis">
+            Include square emojis
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Spaces between days</label>
+        <div class="control">
+          <input class="input" type="number" id="spacesBetween" value="5" min="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Months per row</label>
+        <div class="control">
+          <input class="input" type="number" id="monthsPerRow" value="3" min="1">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Year</label>
+        <div class="control">
+          <input class="input" type="number" id="year" value="2026" min="1900" max="2100">
+        </div>
+      </div>
+
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-link" id="generateBtn" type="submit">Generate</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="field">
+      <label class="label">Generated calendar</label>
+      <div class="control">
+        <pre id="calendarOutput"></pre>
+      </div>
+    </div>
+    
+  </body>
+</html>

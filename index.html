@@ -17,7 +17,8 @@
   </head>
 
   <body onload="brython()">
-    <!-- TODO: Improve UI of form-->
+    <!-- TODO: Improve UI of form -->
+    <!-- TODO: Add checkbox for "comments line" -->
     <form id="calendarForm">
       <div class="field">
         <div class="control">
@@ -28,12 +29,31 @@
         </div>
       </div>
 
+      <!-- 
+        TODO: Indicate that symbols/emojis may alter alignment of the calendar.
+        TODO: Allow to customize the symbols/emojis used for each day of the week.
+      -->
       <div class="field">
+        <label class="label">Special symbols</label>
         <div class="control">
-          <label class="checkbox">
-            <input type="checkbox" id="includeEmojis">
-            Include square emojis
+          <label class="radio">
+            <input type="radio" id="specialSymbolsNone" name="specialSymbols" value="none" checked>
+            None
           </label>
+          <label class="radio">
+            <input type="radio" id="specialSymbolsSymbols" name="specialSymbols" value="symbols">
+            Include symbols
+          </label>
+          <label class="radio">
+            <input type="radio" id="specialSymbolsEmojis" name="specialSymbols" value="emojis">
+            Include emojis
+          </label>
+        </div>
+      </div>
+
+      <div class="field" id="symbolsWarningField" style="display: none;">
+        <div class="notification is-warning is-light">
+          The use of symbols or emojis may alter the calendar alignment.
         </div>
       </div>
 
@@ -65,12 +85,13 @@
       </div>
     </form>
 
+    <!-- TODO: Remove button, calendar should update automatically -->
     <div class="field">
       <label class="label">Generated calendar</label>
       <div class="control">
+        <!-- TODO: Add horizontal scroll if calendar is too wide -->
         <pre id="calendarOutput"></pre>
       </div>
     </div>
-    
   </body>
 </html>

@@ -21,13 +21,12 @@ def parse_int(value, default, minimum=None, maximum=None):
         parsed = maximum
     return parsed
 
-
 # ---- State management ---- #
 
 # TODO: State should be stored in the local storage and loaded on page load.
 state = {
     "include_day_names": True,
-    "include_emojis": False,
+    "special_symbols": "none",
     "spaces_between": 5,
     "months_per_row": 3,
     "year": 2026,
@@ -35,7 +34,13 @@ state = {
 
 def sync_state_from_inputs():
     state["include_day_names"] = document["includeDayNames"].checked
-    state["include_emojis"] = document["includeEmojis"].checked
+
+    special_symbols = "none"
+    if document["specialSymbolsSymbols"].checked:
+        special_symbols = "symbols"
+    elif document["specialSymbolsEmojis"].checked:
+        special_symbols = "emojis"
+    state["special_symbols"] = special_symbols
 
     spaces_between = parse_int(document["spacesBetween"].value, 5, minimum=0)
     months_per_row = parse_int(document["monthsPerRow"].value, 3, minimum=1, maximum=12)
@@ -50,32 +55,51 @@ def sync_state_from_inputs():
     state["year"] = year
 
 
+def update_symbols_warning_visibility():
+    show_warning = state["special_symbols"] != "none"
+    document["symbolsWarningField"].style.display = "block" if show_warning else "none"
+
+
 # ---- Calendar generation ---- #
 
-def month_block(year, month, include_day_names, include_emojis):
+def month_block(year, month, include_day_names, special_symbols):
     month_width = 2 * 7 + state["spaces_between"] * 6
+    use_symbols = special_symbols == "symbols"
+    use_emojis = special_symbols == "emojis"
 
     month_name = calendar.month_name[month]
     month_name_line = month_name.center(month_width)
-    if include_emojis:
+    if use_emojis:
         month_name_line = "⬛⬛⬛⬛   " + month_name_line + "    ⬛⬛⬛"
+    elif use_symbols:
+        month_name_line = "■■■   " + month_name_line + "   ■■■"
     lines = [month_name_line]
 
     if include_day_names:
         day_names = DAY_NAMES
-        if include_emojis:
+        if use_emojis:
             day_names = ["📅 " + day_name for day_name in DAY_NAMES]
+        elif use_symbols:
+            day_names = ["◆ " + day_name for day_name in DAY_NAMES]
         lines.append((" " * state["spaces_between"]).join(day_names))
 
-    empty_cell = "⬜   " if include_emojis else "  "
+    if use_emojis:
+        empty_cell = "⬜   "
+    elif use_symbols:
+        empty_cell = "□   "
+    else:
+        empty_cell = "  "
+
     weeks = calendar.Calendar(firstweekday=0).monthdayscalendar(year, month)
     for week in weeks:
         cells = []
         for day in week:
             if day == 0:
                 cells.append(empty_cell)
-            elif include_emojis:
+            elif use_emojis:
                 cells.append("🟦 " + f"{day:2d}")
+            elif use_symbols:
+                cells.append("■ " + f"{day:2d}")
             else:
                 cells.append(f"{day:2d}")
         lines.append((" " * state["spaces_between"]).join(cells))
@@ -92,7 +116,7 @@ def build_calendar_text():
             state["year"],
             month,
             state["include_day_names"],
-            state["include_emojis"],
+            state["special_symbols"],
         )
         blocks.append(block)
         widths.append(width)
@@ -100,9 +124,12 @@ def build_calendar_text():
     row_gap = " " * MONTH_SEPARATION
 
     year_line = str(state["year"]).center(sum(widths[: state["months_per_row"]]) + MONTH_SEPARATION * (state["months_per_row"] - 1))
-    if state["include_emojis"]:
+    if state["special_symbols"] == "emojis":
         squares_count = 7 * state["months_per_row"]
         year_line = ("🟩 " * ((squares_count + 1) // 2)) + year_line + (" 🟩" * (squares_count // 2))
+    elif state["special_symbols"] == "symbols":
+        squares_count = 7 * state["months_per_row"]
+        year_line = ("■ " * ((squares_count + 1) // 2)) + year_line + (" ■" * (squares_count // 2))
     output_lines = [year_line]
 
     for row_start in range(0, 12, state["months_per_row"]):
@@ -112,7 +139,12 @@ def build_calendar_text():
 
         padded_blocks = []
         for block, width in zip(row_blocks, row_widths):
-            padding_line = (("⬛   " + (" ")*state["spaces_between"])*6 + "⬛   ") if state["include_emojis"] else " " * width
+            if state["special_symbols"] == "emojis":
+                padding_line = (("⬛   " + (" ") * state["spaces_between"]) * 6 + "⬛   ")
+            elif state["special_symbols"] == "symbols":
+                padding_line = (("■   " + (" ") * state["spaces_between"]) * 6 + "■   ")
+            else:
+                padding_line = " " * width
             padded = block + [padding_line] * (max_height - len(block))
             padded_blocks.append(padded)
 
@@ -129,6 +161,8 @@ def build_calendar_text():
 
 def on_option_change(_event):
     sync_state_from_inputs()
+    # FIXME: Should only call this method when modifying the special symbols options.
+    update_symbols_warning_visibility()
 
 def on_generate(event):
     event.preventDefault()
@@ -136,7 +170,9 @@ def on_generate(event):
     document["calendarOutput"].text = build_calendar_text()
 
 document["includeDayNames"].bind("change", on_option_change)
-document["includeEmojis"].bind("change", on_option_change)
+document["specialSymbolsNone"].bind("change", on_option_change)
+document["specialSymbolsSymbols"].bind("change", on_option_change)
+document["specialSymbolsEmojis"].bind("change", on_option_change)
 document["spacesBetween"].bind("input", on_option_change)
 document["monthsPerRow"].bind("input", on_option_change)
 document["year"].bind("input", on_option_change)
@@ -147,4 +183,5 @@ document["calendarForm"].bind("submit", on_generate)
 # ---- Initialization ---- #
 
 sync_state_from_inputs()
+update_symbols_warning_visibility()
 document["calendarOutput"].text = build_calendar_text()

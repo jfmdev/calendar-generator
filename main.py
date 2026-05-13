@@ -60,6 +60,12 @@ def update_symbols_warning_visibility():
     document["symbolsWarningField"].style.display = "block" if show_warning else "none"
 
 
+def render_calendar():
+    sync_state_from_inputs()
+    update_symbols_warning_visibility()
+    document["calendarOutput"].text = build_calendar_text()
+
+
 # ---- Calendar generation ---- #
 
 def month_block(year, month, include_day_names, special_symbols):
@@ -160,14 +166,7 @@ def build_calendar_text():
 # ---- Event handlers ---- #
 
 def on_option_change(_event):
-    sync_state_from_inputs()
-    # FIXME: Should only call this method when modifying the special symbols options.
-    update_symbols_warning_visibility()
-
-def on_generate(event):
-    event.preventDefault()
-    sync_state_from_inputs()
-    document["calendarOutput"].text = build_calendar_text()
+    render_calendar()
 
 document["includeDayNames"].bind("change", on_option_change)
 document["specialSymbolsNone"].bind("change", on_option_change)
@@ -176,12 +175,8 @@ document["specialSymbolsEmojis"].bind("change", on_option_change)
 document["spacesBetween"].bind("input", on_option_change)
 document["monthsPerRow"].bind("input", on_option_change)
 document["year"].bind("input", on_option_change)
-document["generateBtn"].bind("click", on_generate)
-document["calendarForm"].bind("submit", on_generate)
 
 
 # ---- Initialization ---- #
 
-sync_state_from_inputs()
-update_symbols_warning_visibility()
-document["calendarOutput"].text = build_calendar_text()
+render_calendar()

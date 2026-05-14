@@ -68,6 +68,7 @@ def render_calendar():
 
 # ---- Calendar generation ---- #
 
+# TODO: Improve how symbols and emojis are used.
 def month_block(year, month, include_day_names, special_symbols):
     month_width = 2 * 7 + state["spaces_between"] * 6
     use_symbols = special_symbols == "symbols"
@@ -113,6 +114,7 @@ def month_block(year, month, include_day_names, special_symbols):
     return lines, month_width
 
 
+# TODO: Improve how symbols and emojis are used.
 def build_calendar_text():
     blocks = []
     widths = []

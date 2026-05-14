@@ -12,76 +12,92 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
     >
-    <!-- TODO: Add favicon -->
+     <link rel="icon" type="image/png" href="favicon.png">
     <title>Calendar Generator</title>
   </head>
 
   <body onload="brython()">
-    <!-- TODO: Improve UI of form -->
-    <!-- TODO: Add checkbox for "comments line" -->
+    <h1 class="title has-text-centered">Calendar Generator</h1>
+
     <form id="calendarForm">
-      <div class="field">
-        <div class="control">
-          <label class="checkbox">
-            <input type="checkbox" id="includeDayNames">
-            Include names of the days of the week
-          </label>
+      <h2 class="subtitle has-text-centered">Settings</h2>
+
+      <div class="fixed-grid has-2-cols my-0 px-2">
+        <div class="grid">
+          <div class="field my-0">
+            <div class="control">
+              <label class="checkbox">
+                <input type="checkbox" id="includeDayNames">
+                Include names of the days of the week
+              </label>
+            </div>
+          </div>
+
+          <div class="field my-0">
+            <div class="control">
+              <label class="checkbox">
+                <input type="checkbox" id="includeCommentsLine">
+                Add line for annotations
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 
-        TODO: Indicate that symbols/emojis may alter alignment of the calendar.
-        TODO: Allow to customize the symbols/emojis used for each day of the week.
-      -->
-      <div class="field">
-        <label class="label">Special symbols</label>
-        <div class="control">
-          <label class="radio">
-            <input type="radio" id="specialSymbolsNone" name="specialSymbols" value="none" checked>
-            None
-          </label>
-          <label class="radio">
-            <input type="radio" id="specialSymbolsSymbols" name="specialSymbols" value="symbols">
-            Include symbols
-          </label>
-          <label class="radio">
-            <input type="radio" id="specialSymbolsEmojis" name="specialSymbols" value="emojis">
-            Include emojis
-          </label>
+      <div class="field px-2 my-3">
+        <!-- 
+          TODO: Allow to customize the symbols/emojis used for each day of the week.
+        -->
+        <label class="label">
+          Special symbols
+          <small id="symbolsWarningField" style="display: none;" class="has-text-info has-text-weight-normal">(the use of symbols or emojis may alter the calendar alignment)</small>
+        </label>
+        <div class="fixed-grid has-3-cols">
+          <div class="control grid">
+            <label class="radio cell">
+              <input type="radio" id="specialSymbolsNone" name="specialSymbols" value="none" checked>
+              None
+            </label>
+            <label class="radio cell">
+              <input type="radio" id="specialSymbolsSymbols" name="specialSymbols" value="symbols">
+              Include symbols
+            </label>
+            <label class="radio cell">
+              <input type="radio" id="specialSymbolsEmojis" name="specialSymbols" value="emojis">
+              Include emojis
+            </label>
+          </div>
         </div>
       </div>
 
-      <div class="field" id="symbolsWarningField" style="display: none;">
-        <div class="notification is-warning is-light">
-          The use of symbols or emojis may alter the calendar alignment.
+      <div class="fixed-grid has-3-cols px-2">
+        <div class="grid">
+          <div class="cell py-0 field">
+            <label class="label">Year</label>
+            <div class="control">
+              <input class="input" type="number" id="year" value="2026" min="1900" max="2100">
+            </div>
+          </div>
+
+          <div class="cell py-0 field">
+            <label class="label">Spaces between days</label>
+            <div class="control">
+              <input class="input" type="number" id="spacesBetween" value="5" min="0">
+            </div>
+          </div>
+
+          <div class="cell py-0 field">
+            <label class="label">Months per row</label>
+            <div class="control">
+              <input class="input" type="number" id="monthsPerRow" value="3" min="1">
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="field">
-        <label class="label">Spaces between days</label>
-        <div class="control">
-          <input class="input" type="number" id="spacesBetween" value="5" min="0">
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="label">Months per row</label>
-        <div class="control">
-          <input class="input" type="number" id="monthsPerRow" value="3" min="1">
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="label">Year</label>
-        <div class="control">
-          <input class="input" type="number" id="year" value="2026" min="1900" max="2100">
-        </div>
-      </div>
-
     </form>
 
-    <div class="field" style="overflow-x: auto">
-      <label class="label">Generated calendar</label>
+    <div class="field mt-4" style="overflow-x: auto">
+      <h2 class="subtitle has-text-centered">Generated calendar</h2>
       <div class="control">
         <pre id="calendarOutput"></pre>
       </div>

@@ -1,8 +1,19 @@
 # Calendar Generator
 
-A plain text calendar generator creates simple, monospaced ASCII text representations of months or years for use in notes, terminal applications, or documentation
+A browser-based tool that generates plain-text, monospaced ASCII calendars for an entire year. Useful for pasting into notes, plain-text documents, terminal dashboards, or code comments.
 
-Brython + Bulma
+## Usage
+
+Open `index.html` directly in any modern browser — no server or internet connection required after the initial load of the CDN assets.
+
+Adjust the settings in the form at the top of the page and the calendar will update automatically.
+
+## Tech Stack
+
+| Library | Purpose |
+|---|---|
+| [Brython 3.13](https://brython.info/) | Runs the calendar logic written in Python directly in the browser |
+| [Bulma 1.0](https://bulma.io/) | CSS framework for the UI layout |
 
 ## License
 

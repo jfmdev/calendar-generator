@@ -57,7 +57,7 @@ def sync_state_from_inputs():
 
 def update_symbols_warning_visibility():
     show_warning = state["special_symbols"] != "none"
-    document["symbolsWarningField"].style.display = "block" if show_warning else "none"
+    document["symbolsWarningField"].style.display = "inline-block" if show_warning else "none"
 
 
 def render_calendar():
@@ -168,6 +168,7 @@ def build_calendar_text():
 def on_option_change(_event):
     render_calendar()
 
+# TODO: Implement "includeCommentsLine" feature.
 document["includeDayNames"].bind("change", on_option_change)
 document["specialSymbolsNone"].bind("change", on_option_change)
 document["specialSymbolsSymbols"].bind("change", on_option_change)

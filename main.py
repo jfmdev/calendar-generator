@@ -39,6 +39,7 @@ def parse_int(value, default, minimum=None, maximum=None):
 state = {
     "include_day_names": True,
     "include_comments_line": False,
+    "include_separation_line": False,
     "decorators": "none",
     "spaces_between": 5,
     "months_per_row": 3,
@@ -48,6 +49,7 @@ state = {
 def sync_state_from_inputs():
     state["include_day_names"] = document["includeDayNames"].checked
     state["include_comments_line"] = document["includeCommentsLine"].checked
+    state["include_separation_line"] = document["includeSeparationLine"].checked
 
     decorators = "none"
     if document["decoratorsBasic"].checked:
@@ -84,7 +86,7 @@ def render_calendar():
 
 # ---- Calendar generation ---- #
 
-def month_block(year, month, include_day_names, include_comments_line, decorators):
+def month_block(year, month, include_day_names, include_comments_line, include_separation_line, decorators):
     use_decorators = decorators != "none"
 
     month_width = 2 * 7 + state["spaces_between"] * 6
@@ -125,6 +127,9 @@ def month_block(year, month, include_day_names, include_comments_line, decorator
             else:
                 lines.append(" " * month_width)
 
+        if include_separation_line:
+            lines.append(" " * month_width)
+
     return lines, month_width
 
 
@@ -140,6 +145,7 @@ def build_calendar_text():
             month,
             state["include_day_names"],
             state["include_comments_line"],
+            state["include_separation_line"],
             state["decorators"],
         )
         blocks.append(block)
@@ -181,6 +187,7 @@ def on_option_change(_event):
 
 document["includeDayNames"].bind("change", on_option_change)
 document["includeCommentsLine"].bind("change", on_option_change)
+document["includeSeparationLine"].bind("change", on_option_change)
 document["decoratorsNone"].bind("change", on_option_change)
 document["decoratorsBasic"].bind("change", on_option_change)
 document["decoratorsGeometric"].bind("change", on_option_change)

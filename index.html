@@ -46,25 +46,31 @@
 
       <div class="field px-2 my-3">
         <!-- 
-          TODO: Allow to customize the symbols/emojis used for each day of the week.
+          RFE: Allow to customize the symbols/emojis used for each day of the week.
         -->
         <label class="label">
-          Special symbols
-          <small id="symbolsWarningField" style="display: none;" class="has-text-info has-text-weight-normal">(the use of symbols or emojis may alter the calendar alignment)</small>
+          Decorators
+          <small id="decoratorsWarningField" style="display: none;" class="has-text-info has-text-weight-normal">
+            (the use of geometric symbols or emojis may alter the calendar alignment due to varying character widths)
+          </small>
         </label>
-        <div class="fixed-grid has-3-cols">
+        <div class="fixed-grid has-4-cols">
           <div class="control grid">
             <label class="radio cell">
-              <input type="radio" id="specialSymbolsNone" name="specialSymbols" value="none" checked>
+              <input type="radio" id="decoratorsNone" name="decorators" value="none" checked>
               None
             </label>
             <label class="radio cell">
-              <input type="radio" id="specialSymbolsSymbols" name="specialSymbols" value="symbols">
-              Include symbols
+              <input type="radio" id="decoratorsBasic" name="decorators" value="basic">
+              Use basic symbols
             </label>
             <label class="radio cell">
-              <input type="radio" id="specialSymbolsEmojis" name="specialSymbols" value="emojis">
-              Include emojis
+              <input type="radio" id="decoratorsGeometric" name="decorators" value="geometric">
+              Use geometric symbols
+            </label>
+            <label class="radio cell">
+              <input type="radio" id="decoratorsEmojis" name="decorators" value="emojis">
+              Use emojis
             </label>
           </div>
         </div>

@@ -7,6 +7,18 @@ from browser import document
 
 DAY_NAMES = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
+DECORATORS = {
+    "basic": ("*", "|", "#", " ", " "),
+    "geometric": ("◆", "■", "●", " ", " "),
+    "emojis": ("⬛", "📅", "🟦", "⬛", "⬜"),
+}
+
+COMMENT_CELL_DECORATOR = 0
+DAY_CELL_DECORATOR = 1
+DAY_NAME_DECORATOR = 2
+EMPTY_CELL_DECORATOR = 3
+PADDING_CELL_DECORATOR = 4
+
 MONTH_SEPARATION = 10
 
 def parse_int(value, default, minimum=None, maximum=None):
@@ -26,7 +38,7 @@ def parse_int(value, default, minimum=None, maximum=None):
 # TODO: State should be stored in the local storage and loaded on page load.
 state = {
     "include_day_names": True,
-    "special_symbols": "none",
+    "decorators": "none",
     "spaces_between": 5,
     "months_per_row": 3,
     "year": 2026,
@@ -35,12 +47,14 @@ state = {
 def sync_state_from_inputs():
     state["include_day_names"] = document["includeDayNames"].checked
 
-    special_symbols = "none"
-    if document["specialSymbolsSymbols"].checked:
-        special_symbols = "symbols"
-    elif document["specialSymbolsEmojis"].checked:
-        special_symbols = "emojis"
-    state["special_symbols"] = special_symbols
+    decorators = "none"
+    if document["decoratorsBasic"].checked:
+        decorators = "basic"
+    elif document["decoratorsGeometric"].checked:
+        decorators = "geometric"
+    elif document["decoratorsEmojis"].checked:
+        decorators = "emojis"
+    state["decorators"] = decorators
 
     spaces_between = parse_int(document["spacesBetween"].value, 5, minimum=0)
     months_per_row = parse_int(document["monthsPerRow"].value, 3, minimum=1, maximum=12)
@@ -56,8 +70,8 @@ def sync_state_from_inputs():
 
 
 def update_symbols_warning_visibility():
-    show_warning = state["special_symbols"] != "none"
-    document["symbolsWarningField"].style.display = "inline-block" if show_warning else "none"
+    show_warning = state["decorators"] == "geometric" or state["decorators"] == "emojis"
+    document["decoratorsWarningField"].style.display = "inline-block" if show_warning else "none"
 
 
 def render_calendar():
@@ -68,34 +82,24 @@ def render_calendar():
 
 # ---- Calendar generation ---- #
 
-# TODO: Improve how symbols and emojis are used.
-def month_block(year, month, include_day_names, special_symbols):
-    month_width = 2 * 7 + state["spaces_between"] * 6
-    use_symbols = special_symbols == "symbols"
-    use_emojis = special_symbols == "emojis"
+def month_block(year, month, include_day_names, decorators):
+    use_decorators = decorators != "none"
 
+    month_width = 2 * 7 + state["spaces_between"] * 6
+    if use_decorators:
+        month_width = month_width + 7 * 2
+    
     month_name = calendar.month_name[month]
     month_name_line = month_name.center(month_width)
-    if use_emojis:
-        month_name_line = "⬛⬛⬛⬛   " + month_name_line + "    ⬛⬛⬛"
-    elif use_symbols:
-        month_name_line = "■■■   " + month_name_line + "   ■■■"
     lines = [month_name_line]
 
     if include_day_names:
         day_names = DAY_NAMES
-        if use_emojis:
-            day_names = ["📅 " + day_name for day_name in DAY_NAMES]
-        elif use_symbols:
-            day_names = ["◆ " + day_name for day_name in DAY_NAMES]
+        if use_decorators:
+            day_names = [DECORATORS[decorators][DAY_NAME_DECORATOR] + " " + day_name for day_name in DAY_NAMES]
         lines.append((" " * state["spaces_between"]).join(day_names))
 
-    if use_emojis:
-        empty_cell = "⬜   "
-    elif use_symbols:
-        empty_cell = "□   "
-    else:
-        empty_cell = "  "
+    empty_cell = "  " if not use_decorators else DECORATORS[decorators][EMPTY_CELL_DECORATOR] + "   "
 
     weeks = calendar.Calendar(firstweekday=0).monthdayscalendar(year, month)
     for week in weeks:
@@ -103,10 +107,8 @@ def month_block(year, month, include_day_names, special_symbols):
         for day in week:
             if day == 0:
                 cells.append(empty_cell)
-            elif use_emojis:
-                cells.append("🟦 " + f"{day:2d}")
-            elif use_symbols:
-                cells.append("■ " + f"{day:2d}")
+            elif use_decorators:
+                cells.append(DECORATORS[decorators][DAY_CELL_DECORATOR] + " " + f"{day:2d}")
             else:
                 cells.append(f"{day:2d}")
         lines.append((" " * state["spaces_between"]).join(cells))
@@ -114,8 +116,9 @@ def month_block(year, month, include_day_names, special_symbols):
     return lines, month_width
 
 
-# TODO: Improve how symbols and emojis are used.
 def build_calendar_text():
+    use_decorators = state["decorators"] != "none"
+
     blocks = []
     widths = []
 
@@ -124,20 +127,15 @@ def build_calendar_text():
             state["year"],
             month,
             state["include_day_names"],
-            state["special_symbols"],
+            state["decorators"],
         )
         blocks.append(block)
         widths.append(width)
 
     row_gap = " " * MONTH_SEPARATION
 
-    year_line = str(state["year"]).center(sum(widths[: state["months_per_row"]]) + MONTH_SEPARATION * (state["months_per_row"] - 1))
-    if state["special_symbols"] == "emojis":
-        squares_count = 7 * state["months_per_row"]
-        year_line = ("🟩 " * ((squares_count + 1) // 2)) + year_line + (" 🟩" * (squares_count // 2))
-    elif state["special_symbols"] == "symbols":
-        squares_count = 7 * state["months_per_row"]
-        year_line = ("■ " * ((squares_count + 1) // 2)) + year_line + (" ■" * (squares_count // 2))
+    calendar_width = sum(widths[: state["months_per_row"]]) + MONTH_SEPARATION * (state["months_per_row"] - 1)
+    year_line = str(state["year"]).center(calendar_width)
     output_lines = [year_line]
 
     for row_start in range(0, 12, state["months_per_row"]):
@@ -147,10 +145,8 @@ def build_calendar_text():
 
         padded_blocks = []
         for block, width in zip(row_blocks, row_widths):
-            if state["special_symbols"] == "emojis":
-                padding_line = (("⬛   " + (" ") * state["spaces_between"]) * 6 + "⬛   ")
-            elif state["special_symbols"] == "symbols":
-                padding_line = (("■   " + (" ") * state["spaces_between"]) * 6 + "■   ")
+            if use_decorators:
+                padding_line = (DECORATORS[state["decorators"]][PADDING_CELL_DECORATOR] + "   " + (" ") * state["spaces_between"]) * 6 + DECORATORS[state["decorators"]][PADDING_CELL_DECORATOR] + "   "
             else:
                 padding_line = " " * width
             padded = block + [padding_line] * (max_height - len(block))
@@ -172,9 +168,10 @@ def on_option_change(_event):
 
 # TODO: Implement "includeCommentsLine" feature.
 document["includeDayNames"].bind("change", on_option_change)
-document["specialSymbolsNone"].bind("change", on_option_change)
-document["specialSymbolsSymbols"].bind("change", on_option_change)
-document["specialSymbolsEmojis"].bind("change", on_option_change)
+document["decoratorsNone"].bind("change", on_option_change)
+document["decoratorsBasic"].bind("change", on_option_change)
+document["decoratorsGeometric"].bind("change", on_option_change)
+document["decoratorsEmojis"].bind("change", on_option_change)
 document["spacesBetween"].bind("input", on_option_change)
 document["monthsPerRow"].bind("input", on_option_change)
 document["year"].bind("input", on_option_change)

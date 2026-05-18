@@ -9,7 +9,7 @@ DAY_NAMES = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
 DECORATORS = {
     "basic": ("*", "|", "#", " ", " "),
-    "geometric": ("◆", "■", "●", " ", " "),
+    "geometric": ("□", "■", "●", " ", " "),
     "emojis": ("⬛", "📅", "🟦", "⬛", "⬜"),
 }
 
@@ -38,6 +38,7 @@ def parse_int(value, default, minimum=None, maximum=None):
 # TODO: State should be stored in the local storage and loaded on page load.
 state = {
     "include_day_names": True,
+    "include_comments_line": False,
     "decorators": "none",
     "spaces_between": 5,
     "months_per_row": 3,
@@ -46,6 +47,7 @@ state = {
 
 def sync_state_from_inputs():
     state["include_day_names"] = document["includeDayNames"].checked
+    state["include_comments_line"] = document["includeCommentsLine"].checked
 
     decorators = "none"
     if document["decoratorsBasic"].checked:
@@ -82,7 +84,7 @@ def render_calendar():
 
 # ---- Calendar generation ---- #
 
-def month_block(year, month, include_day_names, decorators):
+def month_block(year, month, include_day_names, include_comments_line, decorators):
     use_decorators = decorators != "none"
 
     month_width = 2 * 7 + state["spaces_between"] * 6
@@ -113,6 +115,16 @@ def month_block(year, month, include_day_names, decorators):
                 cells.append(f"{day:2d}")
         lines.append((" " * state["spaces_between"]).join(cells))
 
+        if include_comments_line:
+            if use_decorators:
+                comment_cells = []
+                for day in week:
+                    decorator_index = COMMENT_CELL_DECORATOR if day != 0 else EMPTY_CELL_DECORATOR
+                    comment_cells.append(DECORATORS[decorators][decorator_index] + "   ")
+                lines.append((" " * state["spaces_between"]).join(comment_cells))
+            else:
+                lines.append(" " * month_width)
+
     return lines, month_width
 
 
@@ -127,6 +139,7 @@ def build_calendar_text():
             state["year"],
             month,
             state["include_day_names"],
+            state["include_comments_line"],
             state["decorators"],
         )
         blocks.append(block)
@@ -166,8 +179,8 @@ def build_calendar_text():
 def on_option_change(_event):
     render_calendar()
 
-# TODO: Implement "includeCommentsLine" feature.
 document["includeDayNames"].bind("change", on_option_change)
+document["includeCommentsLine"].bind("change", on_option_change)
 document["decoratorsNone"].bind("change", on_option_change)
 document["decoratorsBasic"].bind("change", on_option_change)
 document["decoratorsGeometric"].bind("change", on_option_change)

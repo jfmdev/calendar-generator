@@ -1,6 +1,7 @@
 import calendar
+import json
 
-from browser import document
+from browser import document, window
 
 
 # ---- Utilities ---- #
@@ -20,6 +21,17 @@ EMPTY_CELL_DECORATOR = 3
 PADDING_CELL_DECORATOR = 4
 
 MONTH_SEPARATION = 10
+LOCAL_STORAGE_STATE_KEY = "calendar-generator-state"
+
+DEFAULT_STATE = {
+    "include_day_names": True,
+    "include_comments_line": False,
+    "include_separation_line": False,
+    "decorators": "none",
+    "spaces_between": 5,
+    "months_per_row": 3,
+    "year": 2026,
+}
 
 def parse_int(value, default, minimum=None, maximum=None):
     try:
@@ -35,16 +47,47 @@ def parse_int(value, default, minimum=None, maximum=None):
 
 # ---- State management ---- #
 
-# TODO: State should be stored in the local storage and loaded on page load.
-state = {
-    "include_day_names": True,
-    "include_comments_line": False,
-    "include_separation_line": False,
-    "decorators": "none",
-    "spaces_between": 5,
-    "months_per_row": 3,
-    "year": 2026,
-}
+state = dict(DEFAULT_STATE)
+
+
+def save_state_to_local_storage():
+    window.localStorage.setItem(LOCAL_STORAGE_STATE_KEY, json.dumps(state))
+
+
+def load_state_from_local_storage():
+    raw_state = window.localStorage.getItem(LOCAL_STORAGE_STATE_KEY)
+    if not raw_state:
+        return
+
+    try:
+        loaded_state = json.loads(str(raw_state))
+    except Exception:
+        return
+
+    decorators = loaded_state.get("decorators")
+    if decorators not in DECORATORS and decorators != "none":
+        decorators = DEFAULT_STATE["decorators"]
+
+    state["include_day_names"] = bool(loaded_state.get("include_day_names", DEFAULT_STATE["include_day_names"]))
+    state["include_comments_line"] = bool(loaded_state.get("include_comments_line", DEFAULT_STATE["include_comments_line"]))
+    state["include_separation_line"] = bool(loaded_state.get("include_separation_line", DEFAULT_STATE["include_separation_line"]))
+    state["decorators"] = decorators if decorators is not None else DEFAULT_STATE["decorators"]
+    state["spaces_between"] = parse_int(loaded_state.get("spaces_between"), DEFAULT_STATE["spaces_between"], minimum=0)
+    state["months_per_row"] = parse_int(loaded_state.get("months_per_row"), DEFAULT_STATE["months_per_row"], minimum=1, maximum=12)
+    state["year"] = parse_int(loaded_state.get("year"), DEFAULT_STATE["year"], minimum=1900, maximum=2100)
+
+
+def sync_inputs_from_state():
+    document["includeDayNames"].checked = state["include_day_names"]
+    document["includeCommentsLine"].checked = state["include_comments_line"]
+    document["includeSeparationLine"].checked = state["include_separation_line"]
+    document["decoratorsNone"].checked = state["decorators"] == "none"
+    document["decoratorsBasic"].checked = state["decorators"] == "basic"
+    document["decoratorsGeometric"].checked = state["decorators"] == "geometric"
+    document["decoratorsEmojis"].checked = state["decorators"] == "emojis"
+    document["spacesBetween"].value = str(state["spaces_between"])
+    document["monthsPerRow"].value = str(state["months_per_row"])
+    document["year"].value = str(state["year"])
 
 def sync_state_from_inputs():
     state["include_day_names"] = document["includeDayNames"].checked
@@ -80,6 +123,7 @@ def update_symbols_warning_visibility():
 
 def render_calendar():
     sync_state_from_inputs()
+    save_state_to_local_storage()
     update_symbols_warning_visibility()
     document["calendarOutput"].text = build_calendar_text()
 
@@ -199,4 +243,6 @@ document["year"].bind("input", on_option_change)
 
 # ---- Initialization ---- #
 
+load_state_from_local_storage()
+sync_inputs_from_state()
 render_calendar()
